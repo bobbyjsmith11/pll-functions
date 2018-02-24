@@ -8,10 +8,6 @@ import math
 
 import numpy as np
 
-# import matplotlib
-# matplotlib.use('agg')
-# import matplotlib.pylab as plt
-
 def solveForComponents(fc, pm, kphi, kvco, N, gamma, loop_type='passive2'):
     """
     :Parameters:
@@ -633,8 +629,7 @@ class PllFourthOrderPassive2(PllSecondOrderPassive):
                 fc, 
                 pm, 
                 gamma,
-                num_iters=100,
-                plotme=False):
+                num_iters=100):
         """ numerically solve for t1 using the bisection method
             see: https://en.wikibooks.org/wiki/Numerical_Methods/Equation_Solving
         :Parameters:
@@ -653,15 +648,6 @@ class PllFourthOrderPassive2(PllSecondOrderPassive):
                 b = guess
             else:
                 a = guess
-            if plotme:
-                x = np.linspace(a,b,1000)
-                y = []
-                for xx in x:
-                    y.append(self.func_t1(xx,fc,pm,gamma=gamma) )
-                fig, ax = plt.subplots()
-                ax.plot(x,y,'r',label='func_t1')
-                plt.grid(True)
-                plt.show()
         return guess
 
     def func_t1(self,
@@ -740,20 +726,6 @@ class PllFourthOrderPassive2(PllSecondOrderPassive):
 
 
         return d
-
-
-def plot_arctan( ):
-    x = np.linspace(-np.pi/2,np.pi/2,1000)
-
-    y1 = np.arctan(x)
-    y2 = np.arctan2(1, 1/x)
-
-    fig, ax = plt.subplots()
-    ax.plot(x,y1,'r',label='arctan')
-    ax.plot(x,y2,'g',label='arctan2')
-    legend = ax.legend()
-    plt.grid(True)
-    plt.show()
 
 
 def callSimulatePll( d ):
@@ -927,60 +899,6 @@ def simulatePll( fstart,
     vco_cl.extend(cl_vco_db)
     return f, g, p, fz, pz, ref_cl, vco_cl
 
-def plotSimulatePhaseNoise():
-    kphi = 5e-3
-    kvco = 60e6
-    N = 200  
-    R = 1  
-    fpfd = 10e6/R
-
-    flt = {
-            'c1':368e-12,
-            'c2':6.75e-9,
-            'c3':76.6e-12,
-            'c4':44.7e-12,
-            'r2':526,
-            'r3':1.35e3,
-            'r4':3.4e3,
-            'flt_type':"passive" 
-           }
-
-    f =         [ 10, 100, 1e3, 10e3, 100e3, 1e6, 10e6, 100e6 ]
-    refPnIn =   [ -138, -158, -163, -165, -165, -165, -165, -165 ]
-    vcoPnIn =   [ -10, -30, -60, -90, -120, -140, -160, -162 ]
-
-    pllFom =        -227
-    pllFlicker =    -268
-
-    f, refPn, vcoPn, icPn, icFlick, comp = simulatePhaseNoise( f,
-                                                               refPnIn,
-                                                               vcoPnIn,
-                                                               pllFom,
-                                                               pllFlicker,
-                                                               kphi,
-                                                               kvco,
-                                                               fpfd,
-                                                               N,
-                                                               R,
-                                                               filt=flt )
-
-    # print(type(f))
-    # print(type(refPn))
-    # print(type(vcoPn))
-    # print(type(icPn))
-    # print(type(icFlick))
-    # print(type(comp))
-
-    fig, ax = plt.subplots()
-    ax.semilogx(f,refPn,'r',label='ref')
-    ax.semilogx(f,vcoPn,'b',label='vco')
-    ax.semilogx(f,icPn,'g',label='pll')
-    ax.semilogx(f,icFlick,'c',label='flick')
-    ax.semilogx(f,comp,'k',linewidth=2,label='total')
-    legend = ax.legend()
-    plt.grid(True)
-    plt.show()
-    return f, refPn, vcoPn, icPn, icFlick, comp
 
 def interp_semilogx(x, y, num_points):
     """ return a paired list of values each with length num_points where
@@ -1021,14 +939,6 @@ def interp_semilogx(x, y, num_points):
     # x_new, y_new = interp_linear(x, y, x_interp) 
     # return x_new, y_new
 
-def plot_interp_semilogx(x, y, num_points=10):
-    """
-    """
-    x2, y2 = interp_semilogx(x, y, num_points=num_points)
-    plt.semilogx(x, y, '-bo', x2, y2, 'ro')
-    plt.grid(True)
-    plt.show() 
-
 def linspace(a, b, num_points):
     """ return a list of linearly spaced values
     between a and b having num_points points
@@ -1038,14 +948,6 @@ def linspace(a, b, num_points):
     for i in range(num_points):
         ret_ar.append(a + i*inc)
     return ret_ar
-
-def plot_interp_linear(x, y, x_interp):
-    """
-    """
-    x2, y2 = interp_linear(x, y, x_interp)
-    plt.plot(x, y, '-bo', [x2], [y2], 'ro')
-    plt.grid(True)
-    plt.show() 
 
 def interp_linear(x, y, x_interp):
     """ linearly interpolate between two points with the
@@ -1123,6 +1025,9 @@ def simulatePhaseNoise2( f,
     filter coefficients or component values. return 3 lists:
     f (frequencies), g_ol (open-loop gain), phases (open-loop phases)  
     """
+    f = np.array(f)
+    refPn = np.array(refPn)
+    vcoPn = np.array(vcoPn)
     if coeffs == None:
         c1 = filt['c1']
         c2 = filt['c2']
@@ -1179,6 +1084,8 @@ def simulatePhaseNoise2( f,
     # # Closed-loop reference transfer gain
     cl_r = (1.0/R)*(g/(1+g/N))
     cl_r_db = 20*np.log10(np.absolute(cl_r))
+    print(type(refPn))
+    print(type(cl_r_db))
     refPnOut = refPn + cl_r_db
     refPn = []
     refPn.extend( refPnOut )
@@ -1206,18 +1113,18 @@ def simulatePhaseNoise2( f,
     return freq, refPn, vcoPn, icPn, compPn
 
 
-def simulatePhaseNoise( f, 
-                        refPn,
-                        vcoPn,
-                        pllFom,
-                        pllFlicker,
-                        kphi,
-                        kvco,
-                        fpfd,
-                        N,
-                        R,
-                        filt=None,
-                        coeffs=None ):
+def simulatePhaseNoise(f, 
+                       refPn,
+                       vcoPn,
+                       pllFom,
+                       pllFlicker,
+                       kphi,
+                       kvco,
+                       fpfd,
+                       N,
+                       R,
+                       filt=None,
+                       coeffs=None):
     """ simulate an arbitrary phase-locked loop using either
     filter coefficients or component values. return 3 lists:
     f (frequencies), g_ol (open-loop gain), phases (open-loop phases)  
@@ -1354,19 +1261,12 @@ def power_sum( pdb_lst ):
         sum_lin += 10**(float(pdb)/10)*1e-3
     return 10*math.log10(sum_lin/1e-3)
 
-def callGetInterpolatedPhaseNoise(d):
+def getInterpolatedPhaseNoise(freq_list,
+                              pn_list,
+                              num_pts=1000):
     """
     """
-    fstart =        d['fstart'] 
-    fstop =         d['fstop'] 
-    numPts =        d['numPts'] 
-    freq_pts =      d['freq_pts'] 
-    pn_pts =        d['pn_pts'] 
-
-    # freq_pts = map(float, freq_pts.split(','))
-    # pn_pts = map(float, pn_pts.split(','))
-    # f = get_freq_points_per_decade(fstart, fstop, ptsPerDec)
-    f, pns = interp_semilogx(freq_pts, pn_pts, num_points=numPts )
+    f, pns = interp_semilogx(freq_list, pn_list, num_points=num_pts )
     d = { 'freqs':f,
           'pns':pns,
         }

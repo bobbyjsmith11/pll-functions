@@ -70,9 +70,28 @@ functions:
   simulatePll:
     handler: handler.callSimulatePll
     events:
-      - http: ANY /simulatePll
-        cors: true
-#    The following are a few example events you can configure
+      # - http: ANY /simulatePll
+      - http:
+          path: /simulatePll
+          method: ANY
+          cors: true
+  
+  interpolatePhaseNoise:
+    handler: handler.callInterpolatePhaseNoise
+    events:
+      - http:
+          path: /callInterpolatePhaseNoise
+          method: ANY
+          cors: true
+
+  simulatePhaseNoise:
+    handler: handler.callSimulatePhaseNoise
+    events:
+      - http:
+          path: /callSimulatePhaseNoise
+          method: ANY
+          cors: True
+          #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
 #    events:

@@ -107,3 +107,130 @@ def callSimulatePll(event, context):
     }
 
     return response
+
+
+def callInterpolatePhaseNoise(event, context):
+    """
+    """
+    try:
+        d = json.loads(event['body'])
+    except:
+        d = {
+            "message": "Exception!",
+            "input": event
+        }
+
+    freq_list = []
+    for f in d['freqs']:
+        freq_list.append(float(f)) 
+    pn_list = []
+    for pn in d['pns']:
+        pn_list.append(pn)
+
+    num_pts = int(d['numPts'])
+    
+    f, pns = pll_calcs.interp_semilogx(freq_list, pn_list, num_points=num_pts)
+    d = { 'freqs':f,
+          'pns':pns,
+        }
+    
+    d_ret = { 'freqs':f,
+              'pns':pns
+            }
+
+    response = {
+        "statusCode": 200,
+        "body": json.dumps(d_ret)
+    }
+
+    return response
+
+
+def callSimulatePhaseNoise(event, context):
+    """
+    """
+    try:
+        d = json.loads(event['body'])
+    except:
+        d = {
+            "message": "Exception!",
+            "input": event
+        }
+
+    f = []
+    for freq in d['freqs']:
+        f.append(float(freq)) 
+
+    vcoPn = []
+    for pn in d['vcoPn']:
+        vcoPn.append(float(pn))
+
+    refPn = []
+    for pn in d['refPn']:
+        refPn.append(float(pn))
+
+
+    pllFom =        float(d['pllFom'])
+    # pllFlicker =    float(request.vars.pllFlicker)
+    kphi =          float(d['kphi'])
+    kvco =          float(d['kvco'])
+    fpfd =          float(d['fpfd'])
+    N =             float(d['N'])
+    R =             float(d['R'])
+    flt_type =      d['flt_type']
+    c1 =            float(d['c1'])
+    c2 =            float(d['c2'])
+    c3 =            float(d['c3'])
+    c4 =            float(d['c4'])
+    r2 =            float(d['r2'])
+    r3 =            float(d['r3'])
+    r4 =            float(d['r4'])
+    flt =   {
+            'c1':c1,
+            'c2':c2,
+            'c3':c3,
+            'c4':c4,
+            'r2':r2,
+            'r3':r3,
+            'r4':r4,
+            'flt_type':flt_type
+            }
+    
+    # def simulatePhaseNoise(f, 
+    #                        refPn,
+    #                        vcoPn,
+    #                        pllFom,
+    #                        pllFlicker,
+    #                        kphi,
+    #                        kvco,
+    #                        fpfd,
+    #                        N,
+    #                        R,
+    #                        filt=None,
+    #                        coeffs=None):
+    
+    fs, refs, vcos, ics, comps = pll_calcs.simulatePhaseNoise2(f,
+                                                               refPn,
+                                                               vcoPn,
+                                                               pllFom,
+                                                               kphi,
+                                                               kvco,
+                                                               fpfd,
+                                                               N,
+                                                               R,
+                                                               filt=flt)
+
+    d_ret = {}
+    d_ret['freqs'] = fs 
+    d_ret['refPnOut'] = refs 
+    d_ret['vcoPnOut'] = vcos
+    d_ret['icPnOut'] = ics
+    #_ret icFlick
+    d_ret['compositePn'] = comps
+
+    response = {
+        "statusCode": 200,
+        "body": json.dumps(d_ret)
+    }
+
+    return response

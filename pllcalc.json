@@ -1,9 +1,0 @@
-{
-    "fc": 100e3,
-    "pm": 45,
-    "kphi": 5e-3,
-    "kvco": 10e6, 
-    "gamma": 1.024,
-    "N": 200,
-    "loop_type": "passive2"
-}
