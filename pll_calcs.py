@@ -1020,7 +1020,7 @@ def simulatePhaseNoise2( f,
                         R,
                         filt=None,
                         coeffs=None,
-                        numPts=1000 ):
+                        numPts=1000):
     """ simulate an arbitrary phase-locked loop using either
     filter coefficients or component values. return 3 lists:
     f (frequencies), g_ol (open-loop gain), phases (open-loop phases)  
@@ -1068,30 +1068,29 @@ def simulatePhaseNoise2( f,
 
     # get smoothed curves for each phase noise component
 
-    freq, vcoPn = interp_semilogx( f, vcoPn, num_points=numPts )
+    freq, vcoPn = interp_semilogx(f, vcoPn, num_points=numPts)
+    freq, refPn = interp_semilogx(f, refPn, num_points=numPts)
 
     # loop filter impedance
-    z = calculateZ( freq,  
-                    t2, 
-                    a[0], 
-                    a[1],
-                    a[2],
-                    a[3] )
+    z = calculateZ(freq,  
+                   t2, 
+                   a[0], 
+                   a[1],
+                   a[2],
+                   a[3])
 
     # G(s)
-    g = calculateG( freq, z, kphi, kvco )
+    g = calculateG(freq, z, kphi, kvco)
 
     # # Closed-loop reference transfer gain
     cl_r = (1.0/R)*(g/(1+g/N))
     cl_r_db = 20*np.log10(np.absolute(cl_r))
-    print(type(refPn))
-    print(type(cl_r_db))
     refPnOut = refPn + cl_r_db
     refPn = []
     refPn.extend( refPnOut )
 
     cl_ic = (g/(1+g/N))
-    cl_ic_db = 20*np.log10(np.absolute(cl_r))
+    cl_ic_db = 20*np.log10(np.absolute(cl_ic))
     icPnOut = pllFom + 10*np.log10(fpfd) + cl_ic_db
     icPn = []
     icPn.extend( icPnOut )
@@ -1186,7 +1185,7 @@ def simulatePhaseNoise(f,
     refPn.extend( refPnOut )
 
     cl_ic = (g/(1+g/N))
-    cl_ic_db = 20*np.log10(np.absolute(cl_r))
+    cl_ic_db = 20*np.log10(np.absolute(cl_ic))
     icPnOut = pllFom + 10*np.log10(fpfd) + cl_ic_db
     icPn = []
     icPn.extend( icPnOut )
